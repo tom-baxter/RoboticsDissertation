@@ -22,6 +22,8 @@ tip_points_cm = []
 bev_angles_data = []
 target_found_data = []
 
+#This is used to set whether the system will be active or not
+
 # active = True
 # filenameSave = "A1.txt"
 
@@ -34,7 +36,7 @@ target_found_data = []
 active = False
 filenameSave = "C2.txt"
 
-# ==== Globals (cache the figure, axes, and artists) ====
+# Globals
 _fig = None
 _ax_top = _ax_bottom = None
 _sc_top = _sc_bot = None          # tip points (scatter)
@@ -82,11 +84,11 @@ def find_3d_tip_vector():
         return False, [tip_x_cm, tip_y_cm, tip_z_cm], [0, 0, 0]
     # GETS VECTOR:
     P = np.asarray(filtered_points, dtype=float)
-    # 1) Point on the line = centroid
+    # Point on the line = centroid
     centroid = P.mean(axis=0)
-    # 2) Direction = first principal component (unit vector)
+    # Direction = first principal component (unit vector)
     X = P - centroid
-    # SVD of the Nx3 centered coords
+    # SVD of the centered coords
     U, S, Vt = np.linalg.svd(X, full_matrices=False)
     direction = Vt[0]                 # principal axis
     direction = direction / np.linalg.norm(direction)  # unit length
@@ -132,8 +134,8 @@ def send_motor_position(position):
     motor.write(f"{position}\n".encode('utf-8'))
 
 def get_latest_readings():
-    """Get the most recent complete reading, discarding older buffered lines."""
-    # Discard stale data if multiple lines are queued
+    # Get the most recent complete reading
+    # Discarding older buffered lines
     while arduino.in_waiting > 1:
         arduino.readline()
     
@@ -256,7 +258,7 @@ def get_needle_position(cur_frame, us_roll):
     inverted = cv2.bitwise_not(sobely_scaled)
 
     # Threshold (tune thresh_val to your data)
-    thresh_val = 180  # 0–255, lower = more pixels kept
+    thresh_val = 180
     _, binary_sobely = cv2.threshold(inverted, thresh_val, 255, cv2.THRESH_BINARY)
 
     #lines
@@ -591,7 +593,7 @@ def save_data(targetCoords):
             f.write(f"    {rounded},\n")
         f.write("])\n\n")
 
-        # Bevel angles (1 decimal place)
+        # Bevel angles
         f.write(f"bevel_angle.append({[clean(x, 1) for x in bev_angles_data]})\n\n")
 
         # Steering flags (force to int)
@@ -791,3 +793,4 @@ def main():
 while True:
     if __name__ == "__main__":
         main()
+
